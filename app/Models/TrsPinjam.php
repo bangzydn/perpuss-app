@@ -18,6 +18,8 @@ class TrsPinjam extends Model
         'kd_koleksi',
         'id_pengguna',
         'status_pinjam',
+        'status_kembali',  // Add this
+        'tgl_aktual_kembali',  // Add this
         'tgl_pengajuan',
         'tgl_disetujui',
         'tgl_ditolak',
@@ -130,5 +132,17 @@ class TrsPinjam extends Model
     public function canBeProcessed()
     {
         return $this->status_pinjam === 'PENDING';
+    }
+
+    public function trsKembali()
+    {
+        return $this->hasOne(TrsKembali::class, 'pinjam_id');
+    }
+
+    // Add scope for active loans
+    public function scopeActiveLoan($query)
+    {
+        return $query->where('status_pinjam', 'DISETUJUI')
+            ->where('status_kembali', 'BELUM_KEMBALI');
     }
 }

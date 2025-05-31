@@ -20,6 +20,8 @@ return new class extends Migration
             $table->string('kd_koleksi');
             $table->integer('id_pengguna');
             $table->enum('status_pinjam', ['PENDING', 'DISETUJUI', 'DITOLAK'])->default('PENDING');
+            $table->enum('status_kembali', ['BELUM_KEMBALI', 'SUDAH_KEMBALI'])->default('BELUM_KEMBALI');
+            $table->datetime('tgl_aktual_kembali')->nullable();
             $table->timestamp('tgl_pengajuan')->nullable();
 
             // Tanggal disetujui/ditolak

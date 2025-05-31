@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('trs_kembali', function (Blueprint $table) {
             $table->id();
             $table->string('no_transaksi_kembali');
+            $table->unsignedBigInteger('pinjam_id');
             $table->string('kd_anggota');
             $table->date('tg_pinjam');
             $table->date('tg_bts_kembali');

@@ -279,6 +279,7 @@
                     <div class="px-2 py-3">
                         <label for="" class="text-lg font-medium">Batas Pinjam</label>
                         <div class="my-3">
+
                         <input name="tgl_bts_kembali" id="tgl_bts_kembali" type="date" placeholder="" 
                         class="border-blue-300 shadow-sm w-full rounded-lg">
                             @error('tgl_bts_kembali')
@@ -306,7 +307,7 @@
             modal.classList.remove("hidden");
 
             const maxBatasPinjam = @json($max_wkt_pjm);
-            const inputTglPinjam = document.getElementById('tgl_pinjam');
+            const inputTglPinjam = document.getElementById('tg_pinjam');
             const inputTglBtsKembali = document.getElementById('tgl_bts_kembali');
 
             inputTglPinjam.addEventListener('change', function() {

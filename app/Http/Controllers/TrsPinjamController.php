@@ -2,14 +2,16 @@
 
 namespace App\Http\Controllers;
 
-use App\Exports\PinjamExports;
+use App\Models\User;
 use App\Models\Anggota;
 use App\Models\Koleksi;
 use App\Models\Kebijakan;
 use App\Models\TrsPinjam;
 use Illuminate\Http\Request;
+use App\Exports\PinjamExports;
 use Illuminate\Support\Facades\Auth;
 use Maatwebsite\Excel\Facades\Excel;
+use App\Notifications\LoanRequestNotification;
 
 class TrsPinjamController extends Controller
 {
@@ -18,7 +20,7 @@ class TrsPinjamController extends Controller
      */
     public function index(Request $request)
     {
-        $data = TrsPinjam::latest()->paginate(2);
+        $data = TrsPinjam::orderBy('created_at', 'DESC')->paginate(2);
         $anggota = Anggota::all();
         $koleksi = Koleksi::all();
 
@@ -78,8 +80,11 @@ class TrsPinjamController extends Controller
             'tgl_pengajuan' => now(),
         ];
         TrsPinjam::create($data);
-
-        //MENGUBAH STATUS KOLEKSI
+        $admins = User::where('role', 'admin')->get();
+        foreach ($admins as $admin) {
+            $admin->notify(new LoanRequestNotification(TrsPinjam::latest()->first(), 'new_request'));
+        }
+        // //MENGUBAH STATUS KOLEKSI
         // $koleksi = Koleksi::where('kd_koleksi', $request->input('kd_koleksi'))->first();
         // if ($koleksi) {
         //     $koleksi->status = 'TIDAK TERSEDIA';
@@ -97,11 +102,6 @@ class TrsPinjamController extends Controller
 
     public function approve($id)
     {
-        // Pastikan hanya admin yang bisa approve
-        // if (!Auth::user()->hasRole('admin')) {
-        //     return redirect()->back()->with('error', 'Akses ditolak. Hanya admin yang dapat menyetujui peminjaman.');
-        // }
-
         $pinjam = TrsPinjam::findOrFail($id);
 
         // Cek apakah status masih PENDING
@@ -118,6 +118,7 @@ class TrsPinjamController extends Controller
         // Update status peminjaman
         $pinjam->update([
             'status_pinjam' => 'DISETUJUI',
+            'status_kembali' => 'BELUM_KEMBALI',
             'tgl_disetujui' => now(),
             'admin_approval_id' => Auth::user()->id,
         ]);
@@ -136,7 +137,6 @@ class TrsPinjamController extends Controller
 
     public function reject(Request $request, $id)
     {
-        // Pastikan hanya admin yang bisa reject
         $pinjam = TrsPinjam::findOrFail($id);
 
         // Cek apakah status masih PENDING
@@ -153,6 +153,20 @@ class TrsPinjamController extends Controller
         ]);
 
         return back()->with('success', 'Peminjaman telah ditolak.');
+    }
+
+    /**
+     * Mark loan as returned (called from TrsKembaliController)
+     */
+    public function markAsReturned($id)
+    {
+        $pinjam = TrsPinjam::findOrFail($id);
+        $pinjam->update([
+            'status_kembali' => 'SUDAH_KEMBALI',
+            'tgl_aktual_kembali' => now()
+        ]);
+
+        return $pinjam;
     }
 
     /**
@@ -218,21 +232,31 @@ class TrsPinjamController extends Controller
         $kdAnggota = $data->kd_anggota;
         $kdKoleksi = $data->kd_koleksi;
 
-        //MENGURANGI JUMLAH PINJAM DI ANGGOTA
-        $anggota = Anggota::where('kd_anggota', $kdAnggota)->first();
-        if ($anggota) {
-            $anggota->jml_pinjam = $anggota->jml_pinjam - 1;
-            $anggota->save();
+        // Only allow deletion if loan is not approved or already returned
+        if ($data->status_pinjam === 'DISETUJUI' && $data->status_kembali === 'BELUM_KEMBALI') {
+            return back()->with('error', 'Tidak dapat menghapus peminjaman yang sedang aktif. Silakan proses pengembalian terlebih dahulu.');
         }
 
-        //MENGUBAH STATUS KOLEKSI
-        $koleksi = Koleksi::where('kd_koleksi', $kdKoleksi)->first();
-        if ($koleksi) {
-            $koleksi->status = 'TERSEDIA';
-            $koleksi->save();
+        //MENGURANGI JUMLAH PINJAM DI ANGGOTA (only if it was approved)
+        if ($data->status_pinjam === 'DISETUJUI') {
+            $anggota = Anggota::where('kd_anggota', $kdAnggota)->first();
+            if ($anggota) {
+                $anggota->jml_pinjam = $anggota->jml_pinjam - 1;
+                $anggota->save();
+            }
         }
+
+        //MENGUBAH STATUS KOLEKSI (only if it was approved and not returned)
+        if ($data->status_pinjam === 'DISETUJUI' && $data->status_kembali === 'BELUM_KEMBALI') {
+            $koleksi = Koleksi::where('kd_koleksi', $kdKoleksi)->first();
+            if ($koleksi) {
+                $koleksi->status = 'TERSEDIA';
+                $koleksi->save();
+            }
+        }
+
         $data->delete();
-        return back()->with('message_delete', 'Data Berhasil dihapus');
+        return back()->with('success', 'Data Berhasil dihapus');
     }
 
     public function export(Request $request)

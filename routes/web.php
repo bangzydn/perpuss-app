@@ -49,6 +49,7 @@ Route::middleware('auth')->group(function () {
     
     Route::resource('trsKembali', TrsKembaliController::class);
     Route::get('kembali-export', [TrsKembaliController::class, 'export'])->name('kembali-export');
+    Route::get('/kembali/loan-details/{loanId}', [TrsKembaliController::class, 'getLoanDetails'])->name('kembali.loan-details');
     // Route::resource('reportPinjam', ReportPinjamController::class);
     // Route::resource('reportKembali', ReportKembaliController::class);
 });

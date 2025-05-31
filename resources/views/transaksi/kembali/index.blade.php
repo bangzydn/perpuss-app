@@ -2,12 +2,12 @@
     <x-slot name="header">
         <div class="flex flex-auto justify-between">
             <h2 class="font-black text-xl text-white dark:text-white">
-                {{ __('Transaksi Pinjam') }}
+                {{ __('Transaksi Pengembalian') }}
             </h2>
             @cannot('role-A')
             <div class="mb-2">
                 <button onclick="return addData()" class="bg-blue-600 text-white font-bold px-6 py-2 rounded-lg hover:bg-blue-700 transition">
-                    + Pinjam Buku
+                    + Pengembalian Buku
                 </button>
             </div>
             @endcannot
@@ -76,27 +76,45 @@
                     @endcannot
                 </tr>
             </thead>
+            {{-- Fixed table body section --}}
             <tbody id="tableBody">
                 @php
                 $no = 1;
                 @endphp
                 @forelse ($data as $d)
-                    <tr >
+                    <tr>
                         <td class="px-7 py-3">{{ $d->id }}</td>
                         <td class="px-7 py-3">{{ $d->no_transaksi_kembali }}</td>
-                        <td class="px-7 py-3">{{ $d->kd_anggota }}</td>
                         <td class="px-7 py-3">
-                            {{\Carbon\Carbon::parse($d->tg_pinjam)->format('d M, Y') }}
+                            {{-- Try direct relationship first, then through trsPinjam --}}
+                            @if($d->anggota)
+                                {{ $d->anggota->nm_anggota }}
+                            @elseif($d->trsPinjam && $d->trsPinjam->anggota)
+                                {{ $d->trsPinjam->anggota->nm_anggota }}
+                            @else
+                                {{ $d->kd_anggota ?? 'N/A' }}
+                            @endif
                         </td>
                         <td class="px-7 py-3">
-                            {{\Carbon\Carbon::parse($d->tg_bts_kembali)->format('d M, Y') }}
+                            {{ $d->tg_pinjam ? \Carbon\Carbon::parse($d->tg_pinjam)->format('d M, Y') : 'N/A' }}
                         </td>
                         <td class="px-7 py-3">
-                            {{\Carbon\Carbon::parse($d->tg_kembali)->format('d M, Y') }}
+                            {{ $d->tg_bts_kembali ? \Carbon\Carbon::parse($d->tg_bts_kembali)->format('d M, Y') : 'N/A' }}
                         </td>
-                        <td class="px-7 py-3">{{ $d->koleksi->judul }}</td>
-                        <td class="px-7 py-3">{{ $d->denda}}</td>
-                        <td class="px-7 py-3">{{ $d->ket }}</td>
+                        <td class="px-7 py-3">
+                            {{ $d->tg_kembali ? \Carbon\Carbon::parse($d->tg_kembali)->format('d M, Y') : 'N/A' }}
+                        </td>
+                        <td class="px-7 py-3">
+                            @if($d->koleksi)
+                                {{ $d->koleksi->judul }}
+                            @elseif($d->trsPinjam && $d->trsPinjam->koleksi)
+                                {{ $d->trsPinjam->koleksi->judul }}
+                            @else
+                                {{ $d->kd_koleksi ?? 'N/A' }}
+                            @endif
+                        </td>
+                        <td class="px-7 py-3">{{ $d->denda ?? 0 }}</td>
+                        <td class="px-7 py-3">{{ $d->ket ?? '' }}</td>
                         @cannot('role-A')
                         <td>
                             <button
@@ -104,20 +122,13 @@
                             ,'{{ $d->tg_kembali }}','{{ $d->tg_bts_kembali }}'
                             ,'{{ $d->kd_koleksi }}','{{ $d->denda }}','{{ $d->ket }}','{{ route('trsKembali.update', $d->id) }}')"
                             class="bg-gray-600 text-white font-bold px-3 py-1 rounded-lg
-                             hover:bg-gray-700 transition">Edit</button>
-                            {{-- <button
-                            onclick="return deleteData('{{ $d->id }}','{{ $d->no_transaksi_kembali }}', '{{ route('trsKembali.destroy', $d->id) }}')"
-                            class="bg-red-600 text-white font-bold px-3 py-1 rounded-lg hover:bg-red-700 transition">Hapus</button> --}}
+                            hover:bg-gray-700 transition">Edit</button>
                         </td>
                         @endcannot
                     </tr>
-                    <!-- forelse empty row mimic -->
-                    <tr class="empty-row" style="display:none;">
-                    <td colspan="3">No matching records found.</td>
-                    </tr>
                 @empty
                     <tr>
-                        <td>Data Not Found</td>
+                        <td colspan="10" class="px-7 py-3 text-center">Data Not Found</td>
                     </tr>
                 @endforelse
             </tbody>
@@ -253,160 +264,123 @@
 
     {{-- SCRIPT MODAL ADD --}}
     <script>
-        
         function addData() {
             const modalContent = document.getElementById("modal-content");
             modalContent.innerHTML = `
-            <div class="grid grid-cols-2"> 
-                    <div class="px-2 py-3">
-                        <label for="" class="text-lg font-medium">Kode Anggota</label>
-                        <div class="my-3">
-                        <input name="kd_anggota" id="kd_anggota" type="text" placeholder="" value="{{Auth::user()->name}}" readonly
-                        class="border-blue-300 shadow-sm w-full rounded-lg">
-                            @error('kd_anggota')
-                                p class="text-red-500 font-medium"> {{ $message }} </p>
-                            @enderror
-                        </div>
-                    </div>
-                    <div class="px-2 py-3">
-                        <label for="" class="text-lg font-medium">Tanggal Pinjam</label>
-                        <div class="my-3">
-                            @foreach ($pinjam as $p)
-                                <input name="tg_pinjam" id="tg_pinjam" type="date" placeholder="" value="{{ $p->tg_pinjam }}" readonly
-                            @endforeach
-                        class="border-blue-300 shadow-sm w-full rounded-lg">
-                            @error('tg_pinjam')
-                                p class="text-red-500 font-medium"> {{ $message }} </p>
-                            @enderror
-                        </div>
-                    </div>
-                    <div class="px-2 py-3">
-                        <label for="" class="text-lg font-medium">Batas Pinjam</label>
-                        <div class="my-3">
-                        @foreach ($pinjam as $p)
-                            <input name="tg_bts_kembali" id="tg_bts_kembali" type="date" placeholder="" value="{{ $p->tgl_bts_kembali }}" readonly
+            <div class="grid grid-cols-1 gap-4">
+                <div class="form-group">
+                    <label for="pinjam_id">Pilih Pinjaman yang Akan Dikembalikan:</label>
+                    <select name="pinjam_id" id="pinjam_id" class="form-control w-full p-2 border rounded" required>
+                        <option value="">-- Pilih Pinjaman --</option>
+                        @foreach($availableLoans as $loan)
+                            <option value="{{ $loan->id }}" 
+                                    data-anggota="{{ $loan->anggota ? $loan->anggota->nm_anggota : 'N/A' }}"
+                                    data-koleksi="{{ $loan->koleksi ? $loan->koleksi->judul : 'N/A' }}"
+                                    data-tgl-pinjam="{{ $loan->tg_pinjam }}"
+                                    data-tgl-bts="{{ $loan->tgl_bts_kembali }}">
+                                    {{ $loan->no_transaksi_pinjam }} - {{ $loan->anggota ? $loan->anggota->kd_anggota : 'N/A' }} 
+                                    - {{ $loan->koleksi ? $loan->koleksi->judul : 'N/A' }}
+                            </option>
                         @endforeach
-                        class="border-blue-300 shadow-sm w-full rounded-lg">
-                            @error('tg_bts_kembali')
-                                p class="text-red-500 font-medium"> {{ $message }} </p>
-                            @enderror
+                    </select>
+                </div>
+        
+                <!-- Detail pinjaman -->
+                <div id="loanDetails" style="display: none;">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="form-group">
+                            <label>Nama Anggota:</label>
+                            <input type="text" id="nm_anggota" class="form-control w-full p-2 border rounded" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label>Judul Buku:</label>
+                            <input type="text" id="judul" class="form-control w-full p-2 border rounded" readonly>
                         </div>
                     </div>
-                    <div class="px-2 py-3">
-                        <label for="" class="text-lg font-medium">Tanggal Pengembalian</label>
-                        <div class="my-3">
-                        <input name="tg_kembali" id="tg_kembali" type="date" placeholder="" 
-                        class="border-blue-300 shadow-sm w-full rounded-lg">
-                            @error('tg_kembali')
-                                p class="text-red-500 font-medium"> {{ $message }} </p>
-                            @enderror
+                    
+                    <div class="grid grid-cols-3 gap-4 mt-4">
+                        <div class="form-group">
+                            <label>Tanggal Pinjam:</label>
+                            <input type="date" id="tg_pinjam" class="form-control w-full p-2 border rounded" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label>Batas Kembali:</label>
+                            <input type="date" id="tg_bts_kembali" class="form-control w-full p-2 border rounded" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label>Tanggal Kembali:</label>
+                            <input type="date" name="tg_kembali" id="tg_kembali" class="form-control w-full p-2 border rounded" 
+                                   value="{{ date('Y-m-d') }}" required>
                         </div>
                     </div>
-                     <div class="px-2 py-3">
-                        <label for="" class="text-lg font-medium">Buku</label>
-                        <div class="my-3">
-                            <select id="kd_koleksi" name="kd_koleksi" class="form-control border-blue-300 shadow-sm w-full rounded-lg"  data-placeholder="Pilih Bagian">
-                                <option value="">Pilih...</option>
-                                @foreach ($koleksi as $k)
-                                <option value="{{ $k->kd_koleksi }}">{{ $k->judul }}</option>
-                                @endforeach
-                            </select>
+        
+                    <div class="grid grid-cols-2 gap-4 mt-4">
+                        <div class="form-group">
+                            <label>Denda (Rp):</label>
+                            <input type="number" name="denda" id="denda" class="form-control w-full p-2 border rounded" 
+                                   min="0" step="0.01" value="0" required>
+                            <small class="text-gray-500">Denda akan dihitung otomatis jika terlambat</small>
                         </div>
-                        @error('kd_koleksi')
-                            p class="text-red-500 font-medium"> {{ $message }} </p>
-                        @enderror
-                    </div>
-                    <div class="px-2 py-3">
-                        <label for="" class="text-lg font-medium">Denda</label>
-                        <div class="my-3">
-                        <input name="denda" id="denda" type="numeric" placeholder="" readonly
-                        class="border-blue-300 shadow-sm w-full rounded-lg">
-                            @error('denda')
-                                p class="text-red-500 font-medium"> {{ $message }} </p>
-                            @enderror
-                        </div>
-                    </div>
-                    <div class="px-2 py-3">
-                        <label for="ket" class="text-lg font-medium">Keterangan</label>
-                        <div class="my-3">
-                            <textarea name="ket" id="ket" rows="3"
-                                class="border-blue-300 shadow-sm w-full rounded-lg" readonly></textarea>
-                            @error('ket')
-                                <p class="text-red-500 font-medium"> {{ $message }} </p>
-                            @enderror
+                        <div class="form-group">
+                            <label>Keterangan:</label>
+                            <textarea name="ket" id="ket" class="form-control w-full p-2 border rounded" rows="3"></textarea>
                         </div>
                     </div>
                 </div>
-                
-                
+            </div>
             `;
+            
             const modal = document.getElementById("modal-addData");
             modal.classList.remove("hidden");
-
-            const dendaPerHari = @json($kebijakan->denda ?? 500);
+        
+            // Get kebijakan values safely
+            const dendaPerHari = @json($kebijakan->denda ?? 1000);
             const maxWktPinjam = @json($kebijakan->max_wkt_pjm ?? 2);
-
-            const inputTglPinjam = document.getElementById('tg_pinjam');
-            const inputTglBtsKembali = document.getElementById('tg_bts_kembali');
-            const inputTglKembali = document.getElementById('tg_kembali');
-            
-
-            // Set batas pinjam otomatis saat tgl_pinjam berubah
-            inputTglPinjam.addEventListener('change', function () {
-                const tglPinjam = new Date(this.value);
-                if (isNaN(tglPinjam)) return;
-
-                tglPinjam.setDate(tglPinjam.getDate() + maxWktPinjam);
-
-                const yyyy = tglPinjam.getFullYear();
-                const mm = String(tglPinjam.getMonth() + 1).padStart(2, '0');
-                const dd = String(tglPinjam.getDate()).padStart(2, '0');
-                inputTglBtsKembali.value = `${yyyy}-${mm}-${dd}`;
-            });
-
-            // Hitung denda saat tgl_kembali diubah
-            inputTglKembali.addEventListener('change', function () {
-                const tglKembali = new Date(this.value);
-                const tglBts = new Date(inputTglBtsKembali.value);
-                if (isNaN(tglKembali) || isNaN(tglBts)) return;
-
-                const selisihHari = Math.floor((tglKembali - tglBts) / (1000 * 60 * 60 * 24));
-                const inputKet = document.getElementById('ket');
-                const inputDenda = document.getElementById('denda');
-
-                if (selisihHari > 0) {
-                    inputDenda.value = selisihHari * dendaPerHari;
-                    inputKet.value = "Mohon maaf anda sudah melewati batas pinjam.";
+        
+            // Add event listener for loan selection
+            document.getElementById('pinjam_id').addEventListener('change', function() {
+                const loanDetails = document.getElementById('loanDetails');
+                
+                if (this.value) {
+                    // Fetch loan details via AJAX
+                    fetch(`/kembali/loan-details/${this.value}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.error) {
+                                alert(data.error);
+                                return;
+                            }
+                            
+                            // Fill form fields safely
+                            document.getElementById('nm_anggota').value = data.anggota ? data.anggota.nm_anggota : 'N/A';
+                            document.getElementById('judul').value = data.koleksi ? data.koleksi.judul : 'N/A';
+                            document.getElementById('tg_pinjam').value = data.tg_pinjam || '';
+                            document.getElementById('tg_bts_kembali').value = data.tgl_bts_kembali || '';
+                            document.getElementById('denda').value = data.calculated_fine || 0;
+                            
+                            // Show loan details section
+                            loanDetails.style.display = 'block';
+                            
+                            // Show fine info if applicable
+                            if (data.calculated_fine > 0) {
+                                document.getElementById('ket').value = `Terlambat ${data.days_late} hari`;
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            alert('Gagal mengambil detail pinjaman');
+                        });
                 } else {
-                    inputDenda.value = 0;
-                    inputKet.value = "Terimakasih sudah tepat waktu dan jangan lupa untuk baca buku setiap hari ya!";
+                    loanDetails.style.display = 'none';
                 }
             });
-
-            // const maxBatasPinjam = @json($max_wkt_pjm);
-            // const inputTglPinjam = document.getElementById('tgl_kembali');
-            // const inputTglBtsKembali = document.getElementById('tgl_bts_kembali');
-
-            // inputTglPinjam.addEventListener('change', function() {
-            //     const tglPinjam = new Date(this.value);
-            //     if (isNaN(tglPinjam)) return;
-
-            //     tglPinjam.setDate(tglPinjam.getDate() + maxBatasPinjam);
-
-            //     const yyyy = tglPinjam.getFullYear();
-            //     const mm = String(tglPinjam.getMonth() + 1).padStart(2, '0');
-            //     const dd = String(tglPinjam.getDate()).padStart(2, '0');
-            //     const formattedDate = `${yyyy}-${mm}-${dd}`;
-
-            //     inputTglBtsKembali.value = formattedDate;
-            // });
         }
-
+        
         function closeModalAdd() {
             const modal = document.getElementById("modal-addData");
             modal.classList.add("hidden");
         }
-    </script>
+        </script>
 
     {{-- SCRIPT MODAL UPDATE --}}
     <script>
