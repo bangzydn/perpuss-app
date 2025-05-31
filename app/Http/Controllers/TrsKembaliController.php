@@ -3,30 +3,44 @@
 namespace App\Http\Controllers;
 
 
+
 use App\Models\Anggota;
 use App\Models\Koleksi;
 use App\Models\Kebijakan;
-use App\Models\Trskembali;
 use App\Models\TrsPinjam;
+use App\Models\Trskembali;
 use Illuminate\Http\Request;
+use App\Exports\KembaliExports;
 use Illuminate\Support\Facades\Auth;
+use Maatwebsite\Excel\Facades\Excel;
 
 class TrsKembaliController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
         $data = Trskembali::latest()->paginate(2);
         $pinjam = TrsPinjam::all();
         $anggota = Anggota::all();
         $koleksi = Koleksi::all();
 
+        $query = Trskembali::with(['koleksi'])->latest();
+
+        // Ambil daftar kantor unik untuk dropdown filter
+        $koleksiList = Trskembali::select('kd_koleksi')->distinct()->pluck('kd_koleksi');
+
+        // Filter hanya jika user memilih kd_koleksi
+        if ($request->filled('kd_koleksi')) {
+            $query->where('kd_koleksi', $request->kd_koleksi);
+        }
+
         $kebijakan = Kebijakan::first();
         $max_wkt_pjm = $kebijakan->max_wkt_pjm;
-        
+
         return view('transaksi.kembali.index')->with([
+            'koleksiList' => $koleksiList,
             'data' => $data,
             'pinjam' => $pinjam,
             'anggota' => $anggota,
@@ -49,7 +63,7 @@ class TrsKembaliController extends Controller
     public function store(Request $request)
     {
         $no_transaksi_kembali = date('YmdHis');
-        
+
         $data = [
             'no_transaksi_kembali' => $no_transaksi_kembali,
             'kd_anggota' => $request->input('kd_anggota'),
@@ -66,7 +80,7 @@ class TrsKembaliController extends Controller
         //MENGUBAH STATUS KOLEKSI
         $koleksi = Koleksi::where('kd_koleksi', $request->input('kd_koleksi'))->first();
         if ($koleksi) {
-            $koleksi->status = 'TIDAK TERSEDIA';
+            $koleksi->status = 'TERSEDIA';
             $koleksi->save();
         }
 
@@ -152,7 +166,16 @@ class TrsKembaliController extends Controller
             $koleksi->save();
         }
         $data->delete();
-        return back()->with('message_delete', 'Data Berhasil dihapus');
-    }
+        return back()->with('success', 'Data Berhasil dihapus');
     }
 
+    public function export(Request $request)
+    {
+        $no_transaksi_kembali = $request->input('no$no_transaksi_kembali'); // bisa null
+
+        // Tentukan nama file
+        $fileName = $no_transaksi_kembali ? 'PengembalianBuku_' . str_replace(' ', '_', $no_transaksi_kembali) . '.xlsx' : 'PeminjamanBuku_All.xlsx';
+
+        return Excel::download(new KembaliExports($no_transaksi_kembali), $fileName);
+    }
+}

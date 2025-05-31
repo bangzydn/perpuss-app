@@ -4,11 +4,13 @@
             <h2 class="font-black text-xl text-white dark:text-white">
                 {{ __('Transaksi Pinjam') }}
             </h2>
+            @cannot('role-A')
             <div class="mb-2">
                 <button onclick="return addData()" class="bg-blue-600 text-white font-bold px-6 py-2 rounded-lg hover:bg-blue-700 transition">
                     + Pinjam Buku
                 </button>
             </div>
+            @endcannot
         </div>
     </x-slot>
 
@@ -16,6 +18,27 @@
 
     <div class="w-auto mx-auto relative overflow-x-auto shadow-sm sm:rounded-lg mt-2 px-4 py-4">
         <x-message></x-message>
+        @cannot('role-Ang')
+        <div class="flex justify-between items-center mb-3">
+            <!-- Filter -->
+            <form method="GET" action="{{ route('trsPinjam.index') }}" class="flex items-center gap-2">
+                <label for="filter" class="text-sm font-medium text-white">Filter Buku:</label>
+                <select name="kd_koleksi" id="filter" class="rounded-md border-gray-300 shadow-sm text-sm">
+                    <option value="">Semua</option>
+                    @foreach ($koleksiList as $kol)
+                        <option value="{{ $kol }}" @if(request('kd_koleksi') == $kol) selected @endif>{{ $kol }}</option>
+                    @endforeach
+                </select>
+                <button type="submit" class="bg-blue-600 text-white px-3 py-1 rounded-md hover:bg-blue-700">Terapkan</button>
+            </form>
+            <a href="{{ route('kembali-export', ['no_transaksi_kembali' => request('no_transaksi_kembali')]) }}" type="submit" class="bg-yellow-600 text-white px-6 py-1 rounded-md hover:bg-yellow-700">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" />
+                </svg>
+            </a>
+            <!-- Optional: Add another button or search on the right side -->
+        </div>
+        @endcannot
         <table style="width:100%" class="w-full text-sm text-center rtl:text-right text-white dark:text-black rounded-md shadow-xl">
             <thead class="text-md font-extrabold text-white uppercase bg-blue-900 dark:bg-blue-900 dark:text-white">
                 <tr>
@@ -46,9 +69,11 @@
                     <th scope="col" class="px-4 py-3">
                         Keterangan
                     </th>
+                    @cannot('role-A')
                     <th scope="col" class="px-4 py-3">
                         Aksi
                     </th>
+                    @endcannot
                 </tr>
             </thead>
             <tbody id="tableBody">
@@ -72,6 +97,7 @@
                         <td class="px-7 py-3">{{ $d->koleksi->judul }}</td>
                         <td class="px-7 py-3">{{ $d->denda}}</td>
                         <td class="px-7 py-3">{{ $d->ket }}</td>
+                        @cannot('role-A')
                         <td>
                             <button
                             onclick="return updateData('{{ $d->id }}','{{ $d->kd_anggota }}'
@@ -83,6 +109,7 @@
                             onclick="return deleteData('{{ $d->id }}','{{ $d->no_transaksi_kembali }}', '{{ route('trsKembali.destroy', $d->id) }}')"
                             class="bg-red-600 text-white font-bold px-3 py-1 rounded-lg hover:bg-red-700 transition">Hapus</button> --}}
                         </td>
+                        @endcannot
                     </tr>
                     <!-- forelse empty row mimic -->
                     <tr class="empty-row" style="display:none;">

@@ -4,11 +4,14 @@
             <h2 class="font-black text-xl text-white dark:text-white">
                 {{ __('Data Anggota') }}
             </h2>
+            @cannot('role-Ang')
             <div class="mb-2">
                 <button onclick="return addData()" class="bg-blue-600 text-white font-bold px-6 py-2 rounded-lg hover:bg-blue-700 transition">
                     + Tambah Data
                 </button>
-            </div>
+            </div>  
+            @endcannot
+            
         </div>
     </x-slot>
 
@@ -43,9 +46,12 @@
                     <th scope="col" class="px-4 py-3">
                         Dibuat Pada
                     </th>
+                    @cannot('role-Ang')
                     <th scope="col" class="px-4 py-3">
                         Aksi
-                    </th>
+                    </th> 
+                    @endcannot
+                    
                 </tr>
             </thead>
             <tbody id="tableBody">
@@ -70,17 +76,20 @@
                         <td class="px-7 py-3">{{ $d->status_p }}</td> --}}
                         <td class="px-7 py-3">
                             {{\Carbon\Carbon::parse($d->created_at)->format('d M, Y')  }}</td>
-                        <td>
-                            <button
-                            onclick="return updateData('{{ $d->id }}','{{ $d->judul }}'
-                            ,'{{ $d->pengarang }}','{{ $d->penerbit }}','{{ $d->tahun }}'
-                            ,'{{ $d->status }}','{{ route('koleksi.update', $d->id) }}')" 
-                            class="bg-gray-600 text-white font-bold px-3 py-1 rounded-lg hover:bg-gray-700 transition">Edit</button>
-                            <button
-                            onclick="return deleteData('{{ $d->id }}'
-                            ,'{{ $d->judul }}', '{{ route('koleksi.destroy', $d->id) }}')"
-                            class="bg-red-600 text-white font-bold px-3 py-1 rounded-lg hover:bg-red-700 transition">Hapus</button>
-                        </td>
+                            @cannot('role-Ang')
+                            <td>
+                                <button
+                                onclick="return updateData('{{ $d->id }}','{{ $d->judul }}'
+                                ,'{{ $d->pengarang }}','{{ $d->penerbit }}','{{ $d->tahun }}'
+                                ,'{{ $d->status }}','{{ route('koleksi.update', $d->id) }}')" 
+                                class="bg-gray-600 text-white font-bold px-3 py-1 rounded-lg hover:bg-gray-700 transition">Edit</button>
+                                <button
+                                onclick="return deleteData('{{ $d->id }}'
+                                ,'{{ $d->judul }}', '{{ route('koleksi.destroy', $d->id) }}')"
+                                class="bg-red-600 text-white font-bold px-3 py-1 rounded-lg hover:bg-red-700 transition">Hapus</button>
+                            </td>
+                            @endcannot
+                        
                     </tr>
                     <!-- forelse empty row mimic -->
                     <tr class="empty-row" style="display:none;">

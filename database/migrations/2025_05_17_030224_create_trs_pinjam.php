@@ -19,6 +19,18 @@ return new class extends Migration
             $table->date('tgl_bts_kembali');
             $table->string('kd_koleksi');
             $table->integer('id_pengguna');
+            $table->enum('status_pinjam', ['PENDING', 'DISETUJUI', 'DITOLAK'])->default('PENDING');
+            $table->timestamp('tgl_pengajuan')->nullable();
+
+            // Tanggal disetujui/ditolak
+            $table->timestamp('tgl_disetujui')->nullable();
+            $table->timestamp('tgl_ditolak')->nullable();
+
+            // ID admin yang menyetujui/menolak
+            $table->unsignedBigInteger('admin_approval_id')->nullable();
+            // Alasan penolakan (opsional)
+            $table->text('alasan_penolakan')->nullable();
+            
             $table->timestamps();
         });
     }

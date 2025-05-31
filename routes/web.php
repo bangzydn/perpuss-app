@@ -32,9 +32,25 @@ Route::middleware('auth')->group(function () {
     Route::resource('koleksi', KoleksiController::class);
     Route::resource('kebijakan', KebijakanController::class);
     Route::resource('trsPinjam', TrsPinjamController::class);
+    
+    Route::get('pinjam-export', [TrsPinjamController::class, 'export'])->name('pinjam-export');
+    Route::get('/trsPinjam/pending/approvals', [TrsPinjamController::class, 'pendingApprovals'])
+        ->name('trsPinjam.pending-approvals');
+
+    // Menyetujui peminjaman
+    Route::post('/trsPinjam/{id}/approve', [TrsPinjamController::class, 'approve'])
+        ->name('trsPinjam.approve');
+
+    // Menolak peminjaman
+    Route::post('/trsPinjam/{id}/reject', [TrsPinjamController::class, 'reject'])
+        ->name('trsPinjam.reject');
+    Route::get('/trs-pinjam/{id}', [TrsPinjamController::class, 'show'])->name('trs-pinjam.show');
+
+    
     Route::resource('trsKembali', TrsKembaliController::class);
-    Route::resource('reportPinjam', ReportPinjamController::class);
-    Route::resource('reportKembali', ReportKembaliController::class);
+    Route::get('kembali-export', [TrsKembaliController::class, 'export'])->name('kembali-export');
+    // Route::resource('reportPinjam', ReportPinjamController::class);
+    // Route::resource('reportKembali', ReportKembaliController::class);
 });
 
 require __DIR__.'/auth.php';

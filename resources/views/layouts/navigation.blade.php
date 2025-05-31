@@ -56,26 +56,38 @@
                 
 
                 <!-- Navigation Links -->
-                @can('role-Ang')
+                @cannot('role-Ang')
+                    
+                
+                <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
+                    <x-nav-link :href="route('trsPinjam.pending-approvals')" :active="request()->routeIs('trsPinjam.pending-approvals')">
+                        {{ __('Persetujuan Peminjaman') }}
+                        @php
+                        $pendingCount = App\Models\TrsPinjam::where('status_pinjam', 'PENDING')->count();
+                        @endphp
+                        @if($pendingCount > 0)
+                            <span class="badge badge-warning right">{{ $pendingCount }}</span>
+                        @endif
+                    </x-nav-link>
+                </div>
+                @endcannot
+
                 <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
                     <x-nav-link :href="route('trsPinjam.index')" :active="request()->routeIs('trsPinjam.index')">
                         {{ __('Transaksi Pinjam') }}
                     </x-nav-link>
                 </div>
-                @endcan
                 
 
                 <!-- Navigation Links -->
-                @can('role-Ang')
+                
                 <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
                     <x-nav-link :href="route('trsKembali.index')" :active="request()->routeIs('trsKembali.index')">
                         {{ __('Transaksi Kembali') }}
                     </x-nav-link>
                 </div>
-                @endcan
-
                 <!-- Navigation Links -->
-                @cannot('role-Ang')
+                {{-- @cannot('role-Ang')
                 <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
                     <x-nav-link :href="route('reportPinjam.index')" :active="request()->routeIs('reportPinjam.index')">
                         {{ __('Laporan Pinjam') }}
@@ -91,7 +103,7 @@
                         {{ __('Laporan Kembali') }}
                     </x-nav-link>
                 </div>
-                @endcannot
+                @endcannot --}}
             </div>
 
             <!-- Settings Dropdown -->
