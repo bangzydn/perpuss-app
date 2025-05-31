@@ -7,6 +7,7 @@ use App\Models\Anggota;
 use App\Models\Koleksi;
 use App\Models\Kebijakan;
 use App\Models\Trskembali;
+use App\Models\TrsPinjam;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -17,14 +18,17 @@ class TrsKembaliController extends Controller
      */
     public function index()
     {
-        $data = Trskembali::all();
+        $data = Trskembali::latest()->paginate(2);
+        $pinjam = TrsPinjam::all();
         $anggota = Anggota::all();
         $koleksi = Koleksi::all();
 
         $kebijakan = Kebijakan::first();
         $max_wkt_pjm = $kebijakan->max_wkt_pjm;
+        
         return view('transaksi.kembali.index')->with([
             'data' => $data,
+            'pinjam' => $pinjam,
             'anggota' => $anggota,
             'koleksi' => $koleksi,
             'max_wkt_pjm' => $max_wkt_pjm,
@@ -45,12 +49,13 @@ class TrsKembaliController extends Controller
     public function store(Request $request)
     {
         $no_transaksi_kembali = date('YmdHis');
+        
         $data = [
             'no_transaksi_kembali' => $no_transaksi_kembali,
             'kd_anggota' => $request->input('kd_anggota'),
-            'tg_pinjam' => $request->input('tgl_pinjam'),
-            'tg_bts_kembali' => $request->input('tgl_bts_kembali'),
-            'tg_kembali' => $request->input('tgl_kembali'),
+            'tg_pinjam' => $request->input('tg_pinjam'),
+            'tg_bts_kembali' => $request->input('tg_bts_kembali'),
+            'tg_kembali' => $request->input('tg_kembali'),
             'kd_koleksi' => $request->input('kd_koleksi'),
             'denda' => $request->input('denda'),
             'ket' => $request->input('ket'),
@@ -71,7 +76,7 @@ class TrsKembaliController extends Controller
             $anggota->jml_pinjam = $anggota->jml_pinjam + 1;
             $anggota->save();
         }
-        return back()->with('message_insert', 'Data Sudah ditambahkan');
+        return back()->with('success', 'Transaksi Sudah ditambahkan');
     }
 
     /**

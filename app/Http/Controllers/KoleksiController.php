@@ -12,7 +12,8 @@ class KoleksiController extends Controller
      */
     public function index()
     {
-        $data = Koleksi::all();
+        $data = Koleksi::orderBy('created_at', 'DESC')
+        ->paginate(3);;
         $codeData = Koleksi::createCode();
         return view('koleksi.index')->with([
             'data' => $data,

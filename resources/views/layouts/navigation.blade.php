@@ -17,66 +17,81 @@
                     </x-nav-link>
                 </div>
 
-                @can('role-A')
-                    <!-- Navigation Links -->
-                    <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                        <x-nav-link :href="route('anggota.index')" :active="request()->routeIs('anggota.index')">
-                            {{ __('Anggota') }}
-                        </x-nav-link>
-                    </div>
-                @endcan
-                 
+                
                 <!-- Navigation Links -->
-                @can('role-A') 
+                @cannot('role-Ang')
+                <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
+                    <x-nav-link :href="route('anggota.index')" :active="request()->routeIs('anggota.index')">
+                        {{ __('Anggota') }}
+                    </x-nav-link>
+                </div>
+                @endcannot
+                                
+                    <!-- Navigation Links -->
+                @cannot('role-Ang')
+                <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
+                    <x-nav-link :href="route('users.index')" :active="request()->routeIs('users.index')">
+                        {{ __('Pengguna') }}
+                    </x-nav-link>
+                </div>
+                @endcannot
+                                 
+                <!-- Navigation Links -->
+                @cannot('role-Ang')
                 <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
                     <x-nav-link :href="route('koleksi.index')" :active="request()->routeIs('koleksi.index')">
                         {{ __('Koleksi') }}
                     </x-nav-link>
                 </div>
-                @endcan
+                @endcannot
+                
                 <!-- Navigation Links -->
-                @can('role-A')
+                @cannot('role-Ang')
                 <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
                     <x-nav-link :href="route('kebijakan.index')" :active="request()->routeIs('kebijakan.index')">
                         {{ __('Kebijakan') }}
                     </x-nav-link>
                 </div>
-                @endcan
+                @endcannot
+                
 
                 <!-- Navigation Links -->
-                @can('role-U')
+                @can('role-Ang')
                 <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
                     <x-nav-link :href="route('trsPinjam.index')" :active="request()->routeIs('trsPinjam.index')">
                         {{ __('Transaksi Pinjam') }}
                     </x-nav-link>
                 </div>
                 @endcan
+                
 
                 <!-- Navigation Links -->
-                
+                @can('role-Ang')
                 <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
                     <x-nav-link :href="route('trsKembali.index')" :active="request()->routeIs('trsKembali.index')">
                         {{ __('Transaksi Kembali') }}
                     </x-nav-link>
                 </div>
+                @endcan
 
                 <!-- Navigation Links -->
-                @can('role-A')
+                @cannot('role-Ang')
                 <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
                     <x-nav-link :href="route('reportPinjam.index')" :active="request()->routeIs('reportPinjam.index')">
                         {{ __('Laporan Pinjam') }}
                     </x-nav-link>
                 </div>
-                @endcan
+                @endcannot
+                
 
                 <!-- Navigation Links -->
-                @can('role-A')
+                @cannot('role-Ang')
                 <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
                     <x-nav-link :href="route('reportKembali.index')" :active="request()->routeIs('reportKembali.index')">
                         {{ __('Laporan Kembali') }}
                     </x-nav-link>
                 </div>
-                @endcan
+                @endcannot
             </div>
 
             <!-- Settings Dropdown -->
@@ -85,14 +100,14 @@
                     <x-slot name="trigger">
                         <button
                             class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white dark:text-white bg-gray-600 dark:bg-gray-800 hover:text-gray-700 dark:hover:text-gray-300 focus:outline-none transition ease-in-out duration-150">
-                            <div>{{ Auth::user()->name }}</div>
-
+                            <div>
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M17.982 18.725A7.488 7.488 0 0 0 12 15.75a7.488 7.488 0 0 0-5.982 2.975m11.963 0a9 9 0 1 0-11.963 0m11.963 0A8.966 8.966 0 0 1 12 21a8.966 8.966 0 0 1-5.982-2.275M15 9.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                                </svg>
+                            </div>
                             <div class="ms-1">
-                                <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg"
-                                    viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd"
-                                        d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                                        clip-rule="evenodd" />
+                                <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
                                 </svg>
                             </div>
                         </button>
@@ -142,9 +157,9 @@
         </div>
 
         <!-- Responsive Settings Options -->
-        <div class="pt-4 pb-1 border-t border-gray-100 dark:border-gray-600">
+        <div class="pt-4 pb-1 border-t border-gray-200">
             <div class="px-4">
-                <div class="font-medium text-base text-gray-800 dark:text-gray-200">{{ Auth::user()->name }}</div>
+                <div class="font-medium text-base text-gray-800">{{ Auth::user()->name }}</div>
                 <div class="font-medium text-sm text-gray-500">{{ Auth::user()->email }}</div>
             </div>
 
@@ -158,7 +173,7 @@
                     @csrf
 
                     <x-responsive-nav-link :href="route('logout')"
-                        onclick="event.preventDefault();
+                            onclick="event.preventDefault();
                                         this.closest('form').submit();">
                         {{ __('Log Out') }}
                     </x-responsive-nav-link>

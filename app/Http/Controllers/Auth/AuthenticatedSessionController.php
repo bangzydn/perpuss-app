@@ -26,6 +26,19 @@ class AuthenticatedSessionController extends Controller
     {
         $request->authenticate();
 
+        // Check if user status is active
+        $user = Auth::user();
+        if ($user->status_p === 'Non-Aktif') {
+            Auth::logout();
+
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+
+            return back()->withErrors([
+                'email' => 'Akun Anda sedang non-aktif. Silakan hubungi administrator.',
+            ])->onlyInput('email');
+        }
+
         $request->session()->regenerate();
 
         return redirect()->intended(route('dashboard', absolute: false));

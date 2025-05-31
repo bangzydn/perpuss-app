@@ -13,7 +13,8 @@ class AnggotaController extends Controller
      */
     public function index()
     {
-        $data = Anggota::all();
+        
+        $data = Anggota::orderBy('created_at', 'DESC')->paginate(3);
         $codeData = Anggota::createCode();
         return view('anggota.index')->with([
             'data' => $data,
@@ -34,6 +35,7 @@ class AnggotaController extends Controller
      */
     public function store(Request $request)
     {
+        
         $data = [
             'kd_anggota' => $request->input('kd_anggota'),
             'nm_anggota' => $request->input('nm_anggota'),
@@ -48,11 +50,11 @@ class AnggotaController extends Controller
             'email' => $request->input('kd_anggota') . '@gmail.com',
             'password' => bcrypt('12345678'),
             'name' => $request->input('nm_anggota'),
-            'role' => 'U',
-            'status' => 'AKTIF',
+            'role' => 'Anggota',
+            'status_p' => 'Aktif',
         ];
         User::create($data);
-        return back()->with('message_insert', 'Data Sudah ditambahkan');
+        return back()->with('success', 'Data Sudah ditambahkan');
     }
 
     /**
@@ -85,7 +87,7 @@ class AnggotaController extends Controller
 
         $datas = Anggota::findOrFail($id);
         $datas->update($data);
-        return back()->with('message_update', 'Data Sudah diupdate');
+        return back()->with('success', 'Data Sudah diupdate');
     }
 
     /**

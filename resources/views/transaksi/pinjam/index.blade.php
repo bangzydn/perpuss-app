@@ -1,11 +1,93 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-            {{ __('trsPinjam') }}
-        </h2>
+        <div class="flex flex-auto justify-between">
+            <h2 class="font-black text-xl text-white dark:text-white">
+                {{ __('Transaksi Pinjam') }}
+            </h2>
+            <div class="mb-2">
+                <button onclick="return addData()" class="bg-blue-600 text-white font-bold px-6 py-2 rounded-lg hover:bg-blue-700 transition">
+                    + Pinjam Buku
+                </button>
+            </div>
+        </div>
     </x-slot>
 
-    <div class="py-12">
+    
+
+    <div class="w-auto mx-auto relative overflow-x-auto shadow-sm sm:rounded-lg mt-2 px-4 py-4">
+        <x-message></x-message>
+        <table style="width:100%" class="w-full text-sm text-center rtl:text-right text-white dark:text-black rounded-md shadow-xl">
+            <thead class="text-md font-extrabold text-white uppercase bg-blue-900 dark:bg-blue-900 dark:text-white">
+                <tr>
+                    <th scope="col" class="px-4 py-3">
+                        No
+                    </th>
+                    <th scope="col" class="px-4 py-3">
+                        No Transaksi Pinjam
+                    </th>
+                    <th scope="col" class="px-4 py-3">
+                        Anggota
+                    </th>
+                    <th scope="col" class="px-4 py-3">
+                        Tanggal Pinjam
+                    </th>
+                    <th scope="col" class="px-4 py-3">
+                        Batas Pinjam
+                    </th>
+                    <th scope="col" class="px-4 py-3">
+                        Pinjam Buku
+                    </th>
+                    <th scope="col" class="px-4 py-3">
+                        Aksi
+                    </th>
+                </tr>
+            </thead>
+            <tbody id="tableBody">
+                @php
+                $no = 1;
+                @endphp
+                @forelse ($data as $d)
+                    <tr >
+                        <td class="px-7 py-3">{{ $d->id }}</td>
+                        <td class="px-7 py-3">{{ $d->no_transaksi_pinjam }}</td>
+                        <td class="px-7 py-3">{{ $d->kd_anggota }}</td>
+                        <td class="px-7 py-3">
+                            {{\Carbon\Carbon::parse($d->tg_pinjam)->format('d M, Y') }}
+                        </td>
+                        <td class="px-7 py-3">
+                            {{\Carbon\Carbon::parse($d->tgl_bts_kembali)->format('d M, Y') }}
+                        </td>
+                        <td class="px-7 py-3">{{ $d->koleksi->judul }}</td>
+                        <td>
+                            <button
+                            onclick="return updateData('{{ $d->id }}','{{ $d->kd_anggota }}'
+                            ,'{{ $d->tg_pinjam }}','{{ $d->tgl_bts_kembali }}'
+                            ,'{{ $d->kd_koleksi }}','{{ route('trsPinjam.update', $d->id) }}')" 
+                            class="bg-gray-600 text-white font-bold px-3 py-1 rounded-lg
+                             hover:bg-gray-700 transition">Edit</button>
+                            {{-- <button
+                            onclick="return deleteData('{{ $d->id }}','{{ $d->no_transaksi_pinjam }}', '{{ route('trsPinjam.destroy', $d->id) }}')"
+                            class="bg-red-600 text-white font-bold px-3 py-1 rounded-lg hover:bg-red-700 transition">Hapus</button> --}}
+                        </td>
+                    </tr>
+                    <!-- forelse empty row mimic -->
+                    <tr class="empty-row" style="display:none;">
+                    <td colspan="3">No matching records found.</td>
+                    </tr>
+                @empty
+                    <tr>
+                        <td>Data Not Found</td>
+                    </tr>
+                @endforelse
+            </tbody>
+        </table>
+        <div class="my-3">
+            {{ $data->links() }}
+        </div>
+        
+    </div>
+
+    {{-- <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="px-4 py-4 flex justify-between items-center">
@@ -43,7 +125,9 @@
                                     <td>{{ $d->koleksi->judul }}</td>
                                     <td>
                                         <button
-                                            onclick="return updateData('{{ $d->id }}','{{ $d->kd_anggota }}','{{ $d->tg_pinjam }}','{{ $d->tgl_bts_kembali }}','{{ $d->kd_koleksi }}','{{ route('trsPinjam.update', $d->id) }}')">Edit</button>
+                                            onclick="return updateData('{{ $d->id }}','{{ $d->kd_anggota }}'
+                                            ,'{{ $d->tg_pinjam }}','{{ $d->tgl_bts_kembali }}'
+                                            ,'{{ $d->kd_koleksi }}','{{ route('trsPinjam.update', $d->id) }}')">Edit</button>
                                         <button
                                             onclick="return deleteData('{{ $d->id }}','{{ $d->no_transaksi_pinjam }}', '{{ route('trsPinjam.destroy', $d->id) }}')">Hapus</button>
                                     </td>
@@ -58,41 +142,45 @@
                 </div>
             </div>
         </div>
-    </div>
+    </div> --}}
 
     {{-- MODAL ADD DATA --}}
     <div id="modal-addData" class="hidden fixed inset-0 flex justify-center items-center m-4">
-        <div class="bg-white rounded-lg p-6 lg:w-4/12 w-full shadow-xl">
-            <h2 class="text-lg font-bold mb-4 bg-amber-100 p-2 rounded-xl">Add trsPinjam</h2>
-            <form id="addForm" action="{{ route('trsPinjam.store') }}" method="post" class="w-full">
+        <div class="bg-white rounded-lg p-4 w-1/2 shadow-xl max-h-[90vh] overflow-y-auto">
+            <h2 class="text-lg font-bold mb-4 bg-blue-200 p-2 rounded-xl">Pinjam Buku</h2>
+            <form id="addForm" action="{{ route('trsPinjam.store') }}" method="POST" class="w-full">
                 @csrf
                 <p id="modal-content"></p>
-                <button type="submit" id="submitAdd" class="mt-4 bg-sky-500 text-white px-4 py-2 rounded">
-                    Simpan
-                </button>
-                <button type="button" onclick="closeModalAdd(event)"
-                    class="mt-4 bg-red-500 text-white px-4 py-2 rounded">
-                    Tutup
-                </button>
+                <div class="text-center">
+                    <button type="submit" id="submitAdd" class="bg-blue-800 text-white px-4 py-1 rounded-md">
+                        Simpan
+                    </button>
+                    <button type="button" onclick="closeModalAdd(event)"
+                        class="bg-red-500 text-white px-4 py-1 rounded-md">
+                        Tutup
+                    </button>
+                </div>
             </form>
         </div>
     </div>
 
     {{-- MODAL UPDATE DATA --}}
     <div id="modal-updateData" class="hidden fixed inset-0 flex justify-center items-center m-4">
-        <div class="bg-white rounded-lg p-6 lg:w-4/12 w-full shadow-xl">
-            <h2 class="text-lg font-bold mb-4 bg-amber-100 p-2 rounded-xl">Update trsPinjam</h2>
+        <div class="bg-white rounded-lg p-6 lg:w-4/12 w-full max-h-[90vh] overflow-y-auto shadow-xl">
+            <h2 class="text-lg font-bold mb-4 bg-amber-100 p-2 rounded-xl">Update Pinjam</h2>
             <form id="updateForm" action="" method="post" class="w-full">
                 @csrf
                 @method('PATCH')
                 <p id="modal-content-update"></p>
-                <button type="submit" id="submitUpdate" class="mt-4 bg-sky-500 text-white px-4 py-2 rounded">
-                    Simpan
-                </button>
-                <button type="button" onclick="closeModalUpdate(event)"
-                    class="mt-4 bg-red-500 text-white px-4 py-2 rounded">
-                    Tutup
-                </button>
+                <div class="text-center">
+                    <button type="submit" id="submitUpdate" class="bg-blue-800 text-white px-4 py-1 rounded-md">
+                        Simpan
+                    </button>
+                    <button type="button" onclick="closeModalUpdate(event)"
+                        class="bg-red-500 text-white px-4 py-1 rounded-md">
+                        Tutup
+                    </button>
+                </div>
             </form>
         </div>
     </div>
@@ -121,31 +209,51 @@
         function addData() {
             const modalContent = document.getElementById("modal-content");
             modalContent.innerHTML = `
-                <div class="lg:mb-5 mb-2 w-full">
-                    <label for="kd_anggota" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Anggota <span class="text-red-500">*</span></label>
-                    <select id="kd_anggota" class="form-control lg:w-[387px] w-[280px]" name="kd_anggota"data-placeholder="Pilih Anggota">
-                        <option value="">Pilih...</option>
-                        @foreach ($anggota as $a)
-                            <option value="{{ $a->kd_anggota }}">{{ $a->nm_anggota }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div class="lg:mb-5 mb-2 w-full">
-                    <label for="tgl_pinjam" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Tanggal Pinjam</label>
-                    <input type="date" id="tgl_pinjam" name="tgl_pinjam" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" value="" />
-                </div>
-                <div class="lg:mb-5 mb-2 w-full">
-                    <label for="tgl_bts_kembali" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Tanggal Batas Kembali</label>
-                    <input type="date" id="tgl_bts_kembali" name="tgl_bts_kembali" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" value=""/>
-                </div>
-                <div class="lg:mb-5 mb-2 w-full">
-                    <label for="kd_koleksi" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Koleksi <span class="text-red-500">*</span></label>
-                    <select id="kd_koleksi" class="form-control lg:w-[387px] w-[280px]" name="kd_koleksi"data-placeholder="Pilih Koleksi">
-                        <option value="">Pilih...</option>
-                        @foreach ($koleksi as $k)
-                            <option value="{{ $k->kd_koleksi }}">{{ $k->judul }}</option>
-                        @endforeach
-                    </select>
+             <div class="grid grid-cols-2"> 
+                    <div class="px-2 py-3">
+                        <label for="" class="text-lg font-medium">Kode Anggota</label>
+                        <div class="my-3">
+                        <input name="kd_anggota" id="kd_anggota" type="text" placeholder="" value="{{Auth::user()->name }}" readonly
+                        class="border-blue-300 shadow-sm w-full rounded-lg">
+                            @error('kd_anggota')
+                                p class="text-red-500 font-medium"> {{ $message }} </p>
+                            @enderror
+                        </div>
+                    </div>
+                    <div class="px-2 py-3">
+                        <label for="" class="text-lg font-medium">Tanggal Pinjam</label>
+                        <div class="my-3">
+                        <input name="tg_pinjam" id="tg_pinjam" type="date" placeholder="" required
+                        class="border-blue-300 shadow-sm w-full rounded-lg">
+                            @error('tg_pinjam')
+                                p class="text-red-500 font-medium"> {{ $message }} </p>
+                            @enderror
+                        </div>
+                    </div>
+                    <div class="px-2 py-3">
+                        <label for="" class="text-lg font-medium">Batas Pinjam</label>
+                        <div class="my-3">
+                        <input name="tgl_bts_kembali" id="tgl_bts_kembali" type="date" placeholder="" 
+                        class="border-blue-300 shadow-sm w-full rounded-lg">
+                            @error('tgl_bts_kembali')
+                                p class="text-red-500 font-medium"> {{ $message }} </p>
+                            @enderror
+                        </div>
+                    </div>
+                     <div class="px-2 py-3">
+                        <label for="" class="text-lg font-medium">Buku</label>
+                        <div class="my-3">
+                            <select id="kd_koleksi" name="kd_koleksi" class="form-control border-blue-300 shadow-sm w-full rounded-lg"  data-placeholder="Pilih Bagian">
+                                <option value="">Pilih...</option>
+                                @foreach ($koleksi as $k)
+                                <option value="{{ $k->kd_koleksi }}">{{ $k->judul }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        @error('kd_koleksi')
+                            p class="text-red-500 font-medium"> {{ $message }} </p>
+                        @enderror
+                    </div>
                 </div>
             `;
             const modal = document.getElementById("modal-addData");
@@ -184,32 +292,54 @@
 
             const modalContent = document.getElementById("modal-content-update");
             modalContent.innerHTML = `
+            <div class="grid grid-cols-2"> 
+                    <div class="px-2 py-3">
+                        <label for="" class="text-lg font-medium">Kode Koleksi</label>
+                        <div class="my-3">
+                        <input name="kd_anggota" id="kd_anggota" type="text" placeholder="" value="{{Auth::user()->name }}" readonly
+                        class="border-blue-300 shadow-sm w-full rounded-lg">
+                            @error('kd_anggota')
+                                p class="text-red-500 font-medium"> {{ $message }} </p>
+                            @enderror
+                        </div>
+                    </div>
+                    <div class="px-2 py-3">
+                        <label for="" class="text-lg font-medium">Judul Koleksi</label>
+                        <div class="my-3">
+                        <input name="tg_pinjam" id="tg_pinjam" type="date" placeholder="" value="${tg_pinjam}"
+                        class="border-blue-300 shadow-sm w-full rounded-lg">
+                            @error('tg_pinjam')
+                                p class="text-red-500 font-medium"> {{ $message }} </p>
+                            @enderror
+                        </div>
+                    </div>
+                    <div class="px-2 py-3">
+                        <label for="" class="text-lg font-medium">Judul Koleksi</label>
+                        <div class="my-3">
+                        <input name="tgl_bts_kembali" id="tgl_bts_kembali" type="date" placeholder="" value="${tgl_bts_kembali}"
+                        class="border-blue-300 shadow-sm w-full rounded-lg">
+                            @error('tgl_bts_kembali')
+                                p class="text-red-500 font-medium"> {{ $message }} </p>
+                            @enderror
+                        </div>
+                    </div>
+                     <div class="px-2 py-3">
+                        <label for="" class="text-lg font-medium">Status Koleksi<span class="text-red-500">*</span></label>
+                        <div class="my-3">
+                            <select id="kd_koleksi" name="kd_koleksi" class="form-control border-blue-300 shadow-sm w-full rounded-lg"  data-placeholder="Pilih Bagian">
+                                <option value="">Pilih...</option>
+                                @foreach ($koleksi as $k)
+                                    <option value="{{ $k->kd_koleksi }}" ${kd_koleksi === "{{ $k->kd_koleksi }}" ? 'selected' : ''}>{{ $k->judul }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        @error('kd_koleksi')
+                            p class="text-red-500 font-medium"> {{ $message }} </p>
+                        @enderror
+                    </div>
+                </div>
 
-            <div class="lg:mb-5 mb-2 w-full">
-                <label for="kd_anggota" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Anggota <span class="text-red-500">*</span></label>
-                <select id="kd_anggota" class="form-control lg:w-[387px] w-[280px]" name="kd_anggota"data-placeholder="Pilih Anggota">
-                    @foreach ($anggota as $a)
-                        <option value="{{ $a->kd_anggota }}" ${kd_anggota === "{{ $a->kd_anggota }}" ? 'selected' : ''}>{{ $a->nm_anggota }}</option>
-                    @endforeach
-                </select>
-            </div>
-            <div class="lg:mb-5 mb-2 w-full">
-                <label for="tgl_pinjam" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Tanggal Pinjam</label>
-                <input type="date" id="tgl_pinjam" name="tgl_pinjam" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500dark:focus:border-blue-500" value="${tg_pinjam}" />
-            </div>
-            <div class="lg:mb-5 mb-2 w-full">
-                <label for="tgl_bts_kembali" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Tanggal Batas Kembali</label>
-                <input type="date" id="tgl_bts_kembali" name="tgl_bts_kembali" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lgfocus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-whitedark:focus:ring-blue-500 dark:focus:border-blue-500" value="${tgl_bts_kembali}"/>
-            </div>
-            <div class="lg:mb-5 mb-2 w-full">
-                <label for="kd_koleksi" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Koleksi <span class="text-red-500">*</span></label>
-                <select id="kd_koleksi" class="form-control lg:w-[387px] w-[280px]" name="kd_koleksi"data-placeholder="Pilih Koleksi">
-                    <option value="">Pilih...</option>
-                    @foreach ($koleksi as $k)
-                        <option value="{{ $k->kd_koleksi }}" ${kd_koleksi === "{{ $k->kd_koleksi }}" ? 'selected' : ''}>{{ $k->judul }}</option>
-                    @endforeach
-                </select>
-            </div>
+            
         `;
             const updateForm = document.getElementById("updateForm");
             updateForm.action = routeUrl;
@@ -246,7 +376,7 @@
             modal.classList.remove("hidden");
 
             const message = document.getElementById("delete-message");
-            message.textContent = `Apakah kamu yakin ingin menghapus trsPinjam dengan id "${id}"?`;
+            message.textContent = `Apakah kamu yakin ingin menghapus Transaksi Pinjam dengan id "${id}"?`;
 
             const deleteForm = document.getElementById("deleteForm");
             deleteForm.action = routeUrl;

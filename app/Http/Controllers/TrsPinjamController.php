@@ -16,7 +16,7 @@ class TrsPinjamController extends Controller
      */
     public function index()
     {
-        $data = TrsPinjam::all();
+        $data = TrsPinjam::latest()->paginate(2);
         $anggota = Anggota::all();
         $koleksi = Koleksi::all();
 
@@ -47,7 +47,7 @@ class TrsPinjamController extends Controller
         $data = [
             'no_transaksi_pinjam' => $no_transaksi_pinjam,
             'kd_anggota' => $request->input('kd_anggota'),
-            'tg_pinjam' => $request->input('tgl_pinjam'),
+            'tg_pinjam' => $request->input('tg_pinjam'),
             'tgl_bts_kembali' => $request->input('tgl_bts_kembali'),
             'kd_koleksi' => $request->input('kd_koleksi'),
             'id_pengguna' => Auth::user()->id,
@@ -67,7 +67,7 @@ class TrsPinjamController extends Controller
             $anggota->jml_pinjam = $anggota->jml_pinjam + 1;
             $anggota->save();
         }
-        return back()->with('message_insert', 'Data Sudah ditambahkan');
+        return back()->with('success', 'Peminjaman Sudah ditambahkan');
     }
 
     /**
